@@ -7,7 +7,17 @@ import {
   threeSix,
   threeNine,
   threeEleven,
-  threeTwelve
+  threeTwelve,
+  threeFourteen,
+  threeFifteen,
+  threeSixteen,
+  threeSeventeen,
+  threeEighteen,
+  threeNineteen,
+  threeTwenty,
+  threeTwentyOne,
+  threeTwentyTwo,
+  threeTwentyThree
 } from './exercise_3'
 
 twoOne()
@@ -24,3 +34,13 @@ threeSix()
 threeNine()
 threeEleven()
 threeTwelve()
+threeFourteen()
+threeFifteen()
+threeSixteen()
+threeSeventeen()
+threeEighteen()
+threeNineteen()
+threeTwenty()
+threeTwentyOne()
+threeTwentyTwo()
+threeTwentyThree()
