@@ -230,6 +230,8 @@ export const threeTwentyThree = () => {
   console.log(zipWith(['a', 'b', 'c'], ['d', 'e', 'f'])((a, b) => `${a} said hello to ${b}.`))
 }
 
+// 3.24 hasSubsequence
+
 // sealed trait Tree[+A]
 // case class Leaf[A](value: A) extends Tree[A]
 // case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
@@ -237,31 +239,133 @@ export const threeTwentyThree = () => {
 type Tuple<A,B> = [A, B]
 type Identity<A> = [A]
 
-interface Leafi<A> extends Identity<A> {}
-interface Branchi<A, B> extends Tuple<Treei<A>, Treei<A>> {}
-type Treei<A> = Leafi<A> | Branchi<A, A>
-
-interface Leaf<A> { value: A }
-interface Branch<A> { left: Tree<A>, right: Tree<A> }
+interface Leaf<A> extends Identity<A> {}
+interface Branch<A> extends Tuple<Tree<A>, Tree<A>> {}
 type Tree<A> = Leaf<A> | Branch<A>
-// type Branch<A> = [Leaf<A> | Branch<A>, Leaf<A> | Branch<A>]
 
-const Leafi = <A>(value: A): Leafi<A> => ([value])
-const Branchi = <A>(left: Treei<A>, right: Treei<A>): Branchi<A, A> => ([left, right])
+const Leaf = <A>(value: A): Leaf<A> => ([value])
+const Branch = <A>(left: Tree<A>, right: Tree<A>): Branch<A> => ([left, right])
 
-console.log(Branchi<number>(Leafi(1), Branchi(Leafi(2), Leafi(4))))
+const isLeaf = <A>(tree: Leaf<A> | Branch<A>): tree is Leaf<A> => {
+  return (tree as Leaf<A>).length === 1;
+}
 
-const Leaf = <A>(value: A): Leaf<A> => ({ value })
-const Branch = <A>(left: Tree<A>, right: Tree<A>): Branch<A> => ({ left, right })
+const isBranch = <A>(tree: Leaf<A> | Branch<A>): tree is Branch<A> => {
+  return (tree as Branch<A>).length === 2;
+}
 
-console.log(Branch<number>(Leaf(1), Branch(Leaf(2), Leaf(4))))
+// console.log(Branch<number>(Leaf(1), Branch(Leaf(2), Leaf(4))))
 
 // 3.25 function size that counts the number of nodes (leaves and branches) in a tree.
 
-const size = <A>([a, b]: Treei<A>): number => {
+const size = <A>([a, b]: Tree<A>): number => {
   if (a && !b) return 1
   if (Array.isArray(a) && Array.isArray(b)) return 1 + size(a) + size(b)
   return 0
 }
 
-console.log('size', size(Branchi(Branchi(Leafi(1), Leafi(2)), Leafi(5))))
+// console.log('size', size(Branch(Branch(Leaf(1), Leaf(2)), Leaf(5))))
+
+// 3.26 function maximum that returns maximum element in a Tree<number>
+
+export const threeTwentySix = () => {
+
+  const maximum = (tree: Tree<number>): number => {
+    const treeToLeafList = (tree: Tree<number>): number[] => {
+      if (isLeaf(tree)) {
+        return tree
+      }
+      return [ ...treeToLeafList(tree[0]), ...treeToLeafList(tree[1]) ]
+    }
+
+    const treeLeafs = treeToLeafList(tree)
+    return foldLeft((a:number, b:number) => a > b ? a : b, 0)(treeLeafs)
+  }
+
+  console.log(maximum(Branch(Leaf(5), Leaf(6))))
+  console.log(maximum(Branch(Branch(Leaf(3), Leaf(17)), Leaf(6))))
+  console.log(maximum(Branch(Branch(Leaf(9), Leaf(3)), Leaf(33))))
+}
+
+
+// 3.27 function depth that returns max path length from root to any leaf
+
+export const threeTwentySeven = () => {
+
+  const depth = (tree: Tree<number>): number => {
+    const treeToDepthList = (count: number) => (tree: Tree<number>): number[] => {
+      if (isLeaf(tree)) {
+        return [count + 1]
+      }
+      return [ ...treeToDepthList(count + 1)(tree[0]), ...treeToDepthList(count + 1)(tree[1]) ]
+    }
+
+    const treeDepths = treeToDepthList(0)(tree)
+    return foldLeft((a:number, b:number) => a > b ? a : b, 0)(treeDepths)
+  }
+
+  console.log(depth(Branch(Leaf(5), Leaf(6))))
+  console.log(depth(Branch(Branch(Leaf(3), Leaf(17)), Leaf(6))))
+  console.log(depth(Branch(Branch(Leaf(9), Leaf(3)), Leaf(33))))
+}
+
+// 3.28 map
+
+export const threeTwentyEight = () => {
+
+  const map = <A, B>(tree: Tree<A>) => (f: (_:A) => B): Tree<B> => {
+    if (isLeaf(tree)) {
+      return Leaf(f(tree[0]))
+    }
+    return Branch<B>(map<A, B>(tree[0])(f), map<A, B>(tree[1])(f))
+  }
+
+  console.log(map(Branch(Branch(Leaf(3), Leaf(17)), Leaf(6)))(a => ` ${a} said sam.`))
+}
+
+// 3.29 fold
+
+const fold = <A, B>(tree: Tree<A>) => (f: (_:A) => B) => (g: (_:B, __:B) => B): B => {
+  if (isLeaf(tree)) {
+    return f(tree[0])
+  }
+  const [left, right] = tree;
+  return g(fold<A, B>(left)(f)(g), fold<A, B>(right)(f)(g))
+}
+
+export const threeTwentyNine = () => {
+
+  // size
+  
+  // const reduce = <A, B>([a, ...as]:A[]) => (f:(_:B,__:A) => B, b: B): B => {
+  //   if (a) {
+  //     return reduce<A, B>(as)(f, f(b, a))
+  //   }
+  //   return b
+  // }
+  
+  // console.log(reduce<number, number>([1,2,3,4,5])((a: number, b: number) => a + b, 0))
+
+  console.log('daba', fold<number, number>(Branch(Branch(Leaf(3), Leaf(17)), Branch(Branch(Leaf(3), Leaf(17)), Leaf(17))))(a => a)((a: number, b: number) => a + b))
+}
+
+export const threeThirty = () => {
+
+  // size
+  const size = <A>(tree: Tree<A>) => fold<A, number>(tree)(_ => 1)((left, right) => left + right + 1)
+  console.log('sizetwo', size(Branch(Branch(Leaf(1), Leaf(2)), Leaf(5))))
+  // maximum
+  const maximum = (tree: Tree<number>): number => fold<number, number>(tree)(n => n)((left, right) => left > right ? left : right)
+  console.log(maximum(Branch(Leaf(5), Leaf(6))))
+  console.log(maximum(Branch(Branch(Leaf(3), Leaf(17)), Leaf(6))))
+  console.log(maximum(Branch(Branch(Leaf(9), Leaf(3)), Leaf(33))))
+  // depth
+  const depth = <A>(tree: Tree<A>) => fold<A, number>(tree)(_ => 1)((left, right) => left > right ? left + 1 : right + 1)
+  console.log(depth(Branch(Leaf(5), Leaf(6))))
+  console.log(depth(Branch(Branch(Leaf(3), Leaf(17)), Leaf(6))))
+  console.log(depth(Branch(Branch(Leaf(9), Branch(Branch(Leaf(3), Branch(Branch(Leaf(3), Leaf(17)), Leaf(6))), Leaf(6))), Branch(Branch(Branch(Branch(Leaf(3), Leaf(17)), Leaf(6)), Leaf(17)), Leaf(6)))))
+  // map
+  const map = <A, B>(tree: Tree<A>) => (f: (_:A) => B) => fold<A, Tree<B>>(tree)(v => Leaf(f(v)))((left, right) => Branch<B>(left, right))
+  console.log(map(Branch(Branch(Leaf(3), Leaf(17)), Leaf(6)))(a => ` ${a} said sam.`))
+}
+

@@ -17,30 +17,38 @@ import {
   threeTwenty,
   threeTwentyOne,
   threeTwentyTwo,
-  threeTwentyThree
+  threeTwentyThree,
+  threeTwentySix,
+  threeTwentySeven,
+  threeTwentyEight,
+  threeThirty
 } from './exercise_3'
 
-twoOne()
-twoTwo()
-twoThree()
-twoFour()
-twoFive()
+// twoOne()
+// twoTwo()
+// twoThree()
+// twoFour()
+// twoFive()
 
-threeTwo()
-threeThree()
-threeFour()
-threeFive()
-threeSix()
-threeNine()
-threeEleven()
-threeTwelve()
-threeFourteen()
-threeFifteen()
-threeSixteen()
-threeSeventeen()
-threeEighteen()
-threeNineteen()
-threeTwenty()
-threeTwentyOne()
-threeTwentyTwo()
-threeTwentyThree()
+// threeTwo()
+// threeThree()
+// threeFour()
+// threeFive()
+// threeSix()
+// threeNine()
+// threeEleven()
+// threeTwelve()
+// threeFourteen()
+// threeFifteen()
+// threeSixteen()
+// threeSeventeen()
+// threeEighteen()
+// threeNineteen()
+// threeTwenty()
+// threeTwentyOne()
+// threeTwentyTwo()
+// threeTwentyThree()
+// threeTwentySix()
+// threeTwentySeven()
+// threeTwentyEight()
+threeThirty()
