@@ -162,12 +162,13 @@ export const threeSeventeen = () => {
 // 3.18 map
 
 export const threeEighteen = () => {
-  const map = <A, B>([a, ...as]: A[], f:(_:A) => B): B[] => {
+  const map = <A, B> (f:(_:A) => B) => ([a, ...as]: A[]): B[] => {
     if (!a) return []
-    return [f(a), ...map(as, f)]
+    return [f(a), ...map(f)(as)]
   }
 
-  console.log(map([1, 2, 3, 4], a => a * 10))
+  map((a: number) => a * 100)
+  map((a: string) => "hello " + a)
 }
 
 // 3.19 filter
