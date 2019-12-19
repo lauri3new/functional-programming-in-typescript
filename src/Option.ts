@@ -1,6 +1,7 @@
 
 export interface Option<A> {
   _tag: string
+  get: () => A
   map:<B>(f:(_: A) => B) => Option<B>
   getOrElse:<B>(_:B) => A | B
   flatMap:<B>(f:(_: A) => Option<B>) => Option<B>
@@ -10,6 +11,7 @@ export interface Option<A> {
 
 export interface None<A> extends Option<A> {
   _tag: string
+  get: () => any
   map:<B>(f:(_: A) => B) => None<any>
   getOrElse:<B>(_:B) => B
   orElse:<B>(_: Option<B>) => Option<B>
@@ -21,6 +23,7 @@ type Some<A> = Option<A>
 
 export const Some = <A>(a: A): Option<A> => ({
   _tag: 'some',
+  get: () => a,
   map: f => Some(f(a)),
   getOrElse: _ => a,
   orElse: () => Some(a),
@@ -30,6 +33,7 @@ export const Some = <A>(a: A): Option<A> => ({
 
 export const None = <A>(): None<A> => ({
   _tag: 'none',
+  get: () => undefined,
   map: f => None<A>(),
   getOrElse: b => b,
   orElse: b => b,
