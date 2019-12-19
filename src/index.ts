@@ -23,7 +23,16 @@ import {
   threeTwentyEight,
   threeThirty
 } from './exercise_3'
-import { fourTwo, fourThree, fourFour, fourFive, fourSix } from './exercise_4'
+import {
+  fourTwo,
+  fourThree,
+  fourFour,
+  fourFive,
+  fourSix
+} from './exercise_4'
+import {
+  fiveOne
+} from './exercise_5'
 
 // twoOne()
 // twoTwo()
@@ -53,9 +62,12 @@ import { fourTwo, fourThree, fourFour, fourFive, fourSix } from './exercise_4'
 // threeTwentySeven()
 // threeTwentyEight()
 // threeThirty()
+
 // fourOne()
 // fourTwo()
-fourThree()
-fourFour()
-fourFive()
-fourSix()
+// fourThree()
+// fourFour()
+// fourFive()
+// fourSix()
+
+fiveOne()
