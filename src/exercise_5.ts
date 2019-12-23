@@ -1,4 +1,5 @@
 import { Option, Some, None } from './Option'
+import { log } from './helper'
 
 export const fiveOne = () => {
   interface Stream<A> {
@@ -136,26 +137,41 @@ export const fiveOne = () => {
   )
 
   console.log('append',
-  append(Stream<number>(() => 5, () => Empty()))(Stream<number>(() => 2, () => Empty()))().head()
+    append(Stream<number>(() => 5, () => Empty()))(Stream<number>(() => 2, () => Empty()))().head()
   )
   
-  // const flatMap = <A, B>(f:(_:A) => Stream<B>) => (as: Stream<A>): () => Stream<B> => foldRight<A, Stream<B>>(
-  //   () => Empty()
-  // )
-  // (
-  //   (a, b) => Stream(() => f(a).head(), () => Stream(f(a).tail()., b))
-  // )
-  // (
-  //   as
-  // )
+  // TODO: check lazyness is correct for all methods
+  
+  const flatMap = <A, B>(f:(_:A) => Stream<B>) => (as: Stream<A>): () => Stream<B> => foldRight<A, Stream<B>>(
+    () => Empty<B>()
+  )
+  (
+    (a, b) => append(f(a))(b())()
+  )
+  (
+    as
+  )
 
-  // const flatmappa: () => Stream<number> = flatMap((a: number) => Stream(() => a + 1, () => Stream(() => a + 1, () => Empty())))(Stream(() => 1, () => Empty()))
-  // map((a: number) => {
-  //   console.log('flatmappp thta', a)
-  //   return a
-  // })(flatmappa())
-  // console.log(flatmappa())
-  // console.log(flatmappa().head())
-  // console.log('stream', toList(flatmappa()))
+  const flatmappa: () => Stream<number> = flatMap((a: number) => Stream(() => a + 1, () => Stream(() => a + 1, () => Empty())))(Stream(() => 1, () => Empty()))
+  console.log('flatmappa', toList(flatmappa()))
 
+  const ones: Stream<1> = Stream(() => 1, () => ones)
+
+  const constant = <A>(a: A): Stream<A> => Stream(() => a, () => constant<A>(a))
+
+  console.log(constant("hello").tail().head())
+
+  const from = (n: number): Stream<number> => Stream(() => n, () => from(n + 1))
+
+  console.log(from(21).tail().head())
+
+  const fibs = (n: number): Stream<number> => {
+    if (n < 1) return Empty()
+    if (n === 1) return Stream(() => 1, () => Empty())
+    if (n === 2) return Stream(() => 1, () => Empty())
+    return Stream(() => fibs(n - 1).head() + fibs(n - 2).head() , () => fibs(n - 3))
+  }
+
+  console.log('fibs', fibs(10).head())
+  
 }
