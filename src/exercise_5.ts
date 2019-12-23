@@ -163,7 +163,7 @@ export const fiveOne = () => {
 
   const from = (n: number): Stream<number> => Stream(() => n, () => from(n + 1))
 
-  console.log(from(21).tail().head())
+  console.log('from', from(21).tail().head())
 
   const fibs = (n: number): Stream<number> => {
     if (n < 1) return Empty()
@@ -173,5 +173,33 @@ export const fiveOne = () => {
   }
 
   console.log('fibs', fibs(10).head())
+
   
+  // def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A]
+
+  const unfold = <A, S>(z: S) => (f:(_:S) => Option<[A, S]>): Stream<A> => {
+    return f(z).map(([A, S]) => {
+      return Stream(() => A, () => unfold<A, S>(S)(f))
+    }).getOrElse(
+      Empty()
+    )
+  }
+  
+  const fibsUnfold = unfold(0)((n) => {
+    if (n === 0) return Some([1, 1])
+    return Some([2 * n + 1, n])
+  }) as any
+
+  console.log('daba unfold', fibsUnfold.tail().head(), fibsUnfold.tail().tail().tail().tail().head())
+
+  const fromUnfold = (n: number): Stream<number> => unfold<number, number>(n)((n) => Some([n, n + 1])) // Stream(() => n, () => from(n + 1))
+  
+  console.log('fromUnfold', fromUnfold(21).tail().head())
+
+  const constantUnfold = <A>(a: A): Stream<A> => unfold<A, A>(a)(a => Some([a, a]))// Stream(() => a, () => constant<A>(a))
+
+  console.log('constantUnfold', constantUnfold("hello").tail().head())
+
+  const onesUnfold: Stream<1> = unfold<1, 1>(1)(() => Some([1, 1])) // Stream(() => 1, () => ones)
+  console.log('onesUnfold', onesUnfold.tail().tail().head())
 }
