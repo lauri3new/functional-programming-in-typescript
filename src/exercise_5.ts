@@ -202,4 +202,113 @@ export const fiveOne = () => {
 
   const onesUnfold: Stream<1> = unfold<1, 1>(1)(() => Some([1, 1])) // Stream(() => 1, () => ones)
   console.log('onesUnfold', onesUnfold.tail().tail().head())
+
+//   Use unfold to implement map, take, takeWhile,
+// zipWith (as in chapter 3), and zipAll. The zipAll function
+// should continue the traversal as long as either stream has more elements—
+// it uses Option to indicate whether each stream has been exhausted.
+// def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])]
+
+  const mapUnfold = <A, B>(f:(_:A) => B) => (as: Stream<A>) => unfold(as)(a => Some([f(a.head()), a.tail()]))
+
+  console.log('mapUnfold', map((a: number) => a + 1)(Stream(() => 1, () => Stream(() => 1, () => Empty())))().tail().head())
+
+  const takeUnfold = <A>(n: number) => (as:Stream<A>): Stream<A> => {
+    return unfold<A, [Stream<A>, number]>([as, n])(([as, n]) => {
+      if (n === 0) return None()
+      return Some([as.head(), [as.tail(), n - 1]])
+    })
+  }
+
+  const takeFiveU = takeUnfold(2)(Stream(() => 1, () => Stream(() => 2, () => Stream(() => 3, () => Stream(() => 4, () => Stream(() => 5, () => Stream(() => 6, () => Stream(() => 7, () => Empty<number>()))))))))
+  console.log('takeUnfoldFive', takeFiveU.head(), takeFiveU.tail().head(), takeFiveU.tail().tail().head())
+
+  const takeWhileUnfold = <A>(f: (_:A) => boolean) => (as: Stream<A>): Stream<A> => {
+    return unfold<A, Stream<A>>(as)((as) => {
+      if (as.isEmpty) return None()
+      if (f(as.head())) return Some([as.head(), as.tail()])
+      return None()
+    })
+  }
+
+  const takeTwoWhileU = takeWhileUnfold((a: number) => a < 2)(Stream(() => 1, () => Stream(() => 2, () => Stream(() => 3, () => Stream(() => 4, () => Stream(() => 5, () => Stream(() => 6, () => Stream(() => 7, () => Empty<number>()))))))))
+  console.log('takeWhileLessThanTwo', takeFiveU.head(), takeFiveU.tail().head(), takeFiveU.tail().tail().head())
+
+  const zipWith = <A>(f: (_:A, __:A) => A) => (as: Stream<A>, mas: Stream<A>): Stream<A> => {
+    return unfold<A, [Stream<A>, Stream<A>]>([as, mas])(([as, mas]) => {
+      if (as.isEmpty || mas.isEmpty) return None()
+      return Some([f(as.head(), (mas).head()), [as.tail(), mas.tail()]])
+    })
+  }
+
+  console.log('zipeWith', zipWith(((a: number, b: number) => a + b))(Stream(() => 1, () => Empty()), Stream(() => 1, () => Empty())).head())
+
+  const zipAll = <A>(f: (_:Option<A>, __:Option<A>) => A) => (as: Stream<A>, mas: Stream<A>): Stream<A> => {
+    return unfold<A, [Stream<A>, Stream<A>]>([as, mas])(([as, mas]) => {
+      if (as.isEmpty && mas.isEmpty) return None()
+      const asHead = !as.isEmpty ? Some(as.head()) : None<A>()
+      const masHead = !mas.isEmpty ? Some(mas.head()) : None<A>()
+      return Some([f(asHead, masHead), [as.tail(), mas.tail()]])
+    })
+  }
+
+  console.log('ZipAll', zipAll(((a: Option<number>, b: Option<number>) => a.getOrElse(b.getOrElse(12))))(Empty(), Stream(() => 21, () => Empty())).head())
+
+  const startsWith = <A>(as: Stream<A>) => (mas: Stream<A>): boolean => {
+    if (mas.isEmpty) return true
+    if (as.head() === mas.head()) return startsWith(as.tail())(mas.tail())
+    return false
+  } // def startsWith[A](s: Stream[A]): Boolean
+
+  console.log('startWith', startsWith(Stream(() => 1, () => Stream(() => 2, () => Stream(() => 3, () => Empty()))))(Stream(() => 1, () => Stream(() => 2, () => Stream(() => 3, () => Empty())))))
+  console.log('startWith', startsWith(Stream(() => 1, () => Stream(() => 2, () => Stream(() => 3, () => Empty()))))(Stream(() => 1, () => Empty())))
+  console.log('startWith', startsWith(Stream(() => 1, () => Stream(() => 2, () => Stream(() => 3, () => Empty()))))(Stream(() => 1, () => Stream(() => 2, () => Empty()))))
+  console.log('startWith', startsWith(Stream(() => 1, () => Stream(() => 2, () => Stream(() => 3, () => Empty()))))(Stream(() => 3, () => Stream(() => 2, () => Stream(() => 3, () => Empty())))))
+
+  // def tails: Stream[Stream[A]]
+  // const unfold = <A, S>(z: S) => (f:(_:S) => Option<[A, S]>): Stream<A> => {
+  //   return f(z).map(([A, S]) => {
+  //     return Stream(() => A, () => unfold<A, S>(S)(f))
+  //   }).getOrElse(
+  //     Empty()
+  //   )
+  // }
+
+  const tails = <A>(as: Stream<A>): Stream<Stream<A>> => {
+    return unfold<Stream<A>, Stream<A>>(as)((as) => {
+      if (as.isEmpty) return None()
+      return Some([ as, drop<A>(1)(as)])
+    })
+  }
+
+  console.log('tails',
+  toList(take(5)(tails(Stream(() => 1, () => Stream(() => 2, () => Empty()))))).map((a: any) => toList(a))
+  )
+
+  // Hard: Generalize tails to the function scanRight, which is like a foldRight that returns a stream of the intermediate results. For example:
+
+  // const foldRight = <A, B>(z:() => B) => (f: (_:A, __:() => B) => B) => (as: Stream<A>): (() => B) => {
+  //   if (as.isEmpty) return z
+  //   return () => f(as.head(), foldRight<A, B>(z)(f)(as.tail()))
+  // }
+
+  const scanRight = <A, B>([a, ...as]: A[]) => (f:(_:B, __:A) => B, z: B): B[] => {
+    if (!a) return []
+    return [ ...scanRight<A, B>(as)(f, f(z, a)), f(z, a)]
+  }
+
+  const scanRightT = <A, B>(as: Stream<A>) => (f:(_:B, __:A) => B, z: B): Stream<B> => {
+    if (as.isEmpty) return Empty()
+    return Stream(() => f(z, as.head()), () => scanRightT<A, B>(as.tail())(f, f(z, as.head())))
+  }
+
+  console.log('scanRight', scanRight<number, number>([1,2,3,4])((a: number, b: number) => a + b, 0))
+  console.log('scanRightT', 
+  toList(
+  scanRightT<number, number>(Stream(() => 1, () => Stream(() => 2, () => Stream(() => 3,() => Stream(() => 4, () => Empty())))))((a: number, b: number) => a + b, 0)
+  )
+  )
+
+  // console.log(toList(scanRight<number, number>(() => 0)((a: number, b:number) => a + b)(Stream(() => 1, () => Stream(() => 2, () => Empty())))))
+
 }
