@@ -302,6 +302,17 @@ export const fiveOne = () => {
     return Stream(() => f(z, as.head()), () => scanRightT<A, B>(as.tail())(f, f(z, as.head())))
   }
 
+  const scanRightFR = <A, B>(as: Stream<A>) => (f:(_:B, __:A) => B, z: B): Stream<B> => {
+    // foldRight((z, Stream(z)))((a, p0) => {
+    //   // p0 is passed by-name and used in by-name args in f and cons. So use lazy val to ensure only one evaluation...
+    //   lazy val p1 = p0
+    //   val b2 = f(a, p1._1)
+    //   (b2, cons(b2, p1._2))
+    // })._2
+    if (as.isEmpty) return Empty()
+    return Stream(() => f(z, as.head()), () => scanRightT<A, B>(as.tail())(f, f(z, as.head())))
+  }
+
   console.log('scanRight', scanRight<number, number>([1,2,3,4])((a: number, b: number) => a + b, 0))
   console.log('scanRightT', 
   toList(
