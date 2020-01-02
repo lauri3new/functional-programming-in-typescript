@@ -33,6 +33,7 @@ import {
 import {
   fiveOne
 } from './exercise_5'
+import { sixOne } from './exercise_6'
 
 // twoOne()
 // twoTwo()
@@ -70,4 +71,5 @@ import {
 // fourFive()
 // fourSix()
 
-fiveOne()
+// fiveOne()
+sixOne()
